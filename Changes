@@ -1,0 +1,19 @@
+Revision history for Perl extension Test::TestCoverage.
+
+0.01  Tue Aug 29 19:34:33 2006
+	- original version; created by h2xs 1.23 with options
+		-XA -n Test::TestCoverage
+        
+0.02  Thu Aug 31 09:51:22 2006
+    - added some POD 
+    
+0.03  Thu Aug 31 17:11:52 2006
+    - fixed some POD errors
+    - added test_coverage_except
+
+0.06  Tue Jul 24 2007
+    - fixed #24176
+
+0.07  Sun Jun 29 2008
+    - fixed test_coverage_except -> thanks to Edward Shrock and Anthony Gladdish
+    - added test for test_coverage_except
