@@ -46,23 +46,29 @@ sub test_coverage {
         no strict 'refs';
         no warnings 'redefine';
         
-        my $old     = $package->can( $sub );
-        
-        if ( !$moosified ) {
-            *{ $package . '::' . $sub } = sub {
-                $invokes->{$package}->{$sub}++; 
-                $old->( @_ );
-            };
-        }
-        else {
+        my $old    = $package->can( $sub );
+        my $mopped = 0;
+
+        if ( $moosified ) {
             require Class::MOP;
             my $meta
                 = $package->can('add_before_method_modifier')
                 ? $package
                 : Class::MOP::class_of( $package );
-            $meta->add_after_method_modifier( $sub, sub {
+
+            if ( defined $meta ) {
+                $mopped++;
+                $meta->add_after_method_modifier( $sub, sub {
+                    $invokes->{$package}->{$sub}++; 
+                } );
+            }
+        }
+
+        if ( !$mopped ) {
+            *{ $package . '::' . $sub } = sub {
                 $invokes->{$package}->{$sub}++; 
-            } );
+                $old->( @_ );
+            };
         }
     }
         
