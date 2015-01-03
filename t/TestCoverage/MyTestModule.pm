@@ -1,4 +1,5 @@
-package TestCoverage::MyTestModule;
+package
+   TestCoverage::MyTestModule;
 
 use strict;
 use warnings;
