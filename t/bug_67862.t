@@ -15,7 +15,9 @@ BEGIN {
 
 use lib $dir;
 
-my $moose_ok = eval "use Moose" ? 1 : 0;
+my $moose_ok = eval "use Moose; 1;" ? 1 : 0;
+
+diag "used Moose: $moose_ok";
 
 SKIP: {
     skip "No Moose", 5 if !$moose_ok;
