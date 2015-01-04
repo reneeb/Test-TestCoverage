@@ -17,7 +17,7 @@ our @EXPORT = qw(
                  reset_all_test_coverage
                  test_coverage_except
                 );
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 my $self    = {};
 my $test    = Test::Builder->new();

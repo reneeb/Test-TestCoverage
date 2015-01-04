@@ -1,4 +1,8 @@
 Revision history for Perl extension Test::TestCoverage.
+=======================================================
+
+0.12  2014-01-04
+    - fix bug:  coverage doesn't work when tested for a module that uses a module that used Moose, but didn't use Moose itself
 
 0.11  2011-05-02
     - there were still some problems with Moose classes (original subroutine was
