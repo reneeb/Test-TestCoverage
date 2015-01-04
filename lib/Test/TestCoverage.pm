@@ -1,11 +1,12 @@
 package Test::TestCoverage;
 
+# ABSTRACT: Test if your test covers all "public" subroutines of the package
+
 use strict;
 use warnings;
 use Devel::Symdump;
 use Test::Builder;
 use B;
-use Hook::LexWrap;
 use base qw(Exporter);
 
 our @EXPORT = qw(
@@ -16,7 +17,7 @@ our @EXPORT = qw(
                  reset_all_test_coverage
                  test_coverage_except
                 );
-our $VERSION = '0.09';
+our $VERSION = '0.12';
 
 my $self    = {};
 my $test    = Test::Builder->new();
@@ -32,18 +33,43 @@ sub test_coverage {
     
     $invokes->{$package} = {};
     
+    my $moosified = $INC{"Moose.pm"} ? 1 : 0;
+    
     for my $subref(@{$self->{subs}->{$package}}){
         my $sub      = $subref->[0];
+        
         my $sub_with = $package . '::' . $sub;
         unless(exists $invokes->{$package}->{$sub}){
             $invokes->{$package}->{$sub} = 0;
         }
         
-        Hook::LexWrap::wrap($sub_with, 
-            pre => sub{
-                $invokes->{$package}->{$sub}++; 
+        no strict 'refs';
+        no warnings 'redefine';
+        
+        my $old    = $package->can( $sub );
+        my $mopped = 0;
+
+        if ( $moosified ) {
+            require Class::MOP;
+            my $meta
+                = $package->can('add_before_method_modifier')
+                ? $package
+                : Class::MOP::class_of( $package );
+
+            if ( defined $meta ) {
+                $mopped++;
+                $meta->add_after_method_modifier( $sub, sub {
+                    $invokes->{$package}->{$sub}++; 
+                } );
             }
-        );
+        }
+
+        if ( !$mopped ) {
+            *{ $package . '::' . $sub } = sub {
+                $invokes->{$package}->{$sub}++; 
+                $old->( @_ );
+            };
+        }
     }
         
     1;
@@ -157,10 +183,6 @@ sub _get_sub {
 1;
 __END__
 
-=head1 NAME
-
-Test::TestCoverage - Test if your test covers all "public" subroutines of the package
-
 =head1 SYNOPSIS
 
   use Test::TestCoverage;
@@ -244,23 +266,9 @@ C<reset_all_test_coverage>, C<test_coverage_except>
 
 L<Test::SubCalls>, L<Test::Builder>, L<Test::More>, L<Devel::Cover>
 
-
 =head1 BUGS / TODO
 
 There are a lot of things to do. If you experience any problems please contact
 me. At the moment the subroutines have to be invoked with full qualified names.
 Exported subroutines are not detected.
 
-=head1 AUTHOR
-
-Renee Baecker, E<lt>module@renee-baecker.deE<gt>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright (C) 2006 by Renee Baecker
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.8 or,
-at your option, any later version of Perl 5 you may have available.
-
-=cut
